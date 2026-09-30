@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicSetu Bihar — See it. Report it. Resolve it.</title>
+
+  <!-- External UI libraries; the core app remains in this single HTML file. -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg">
+    <div class="container py-2">
+      <a class="navbar-brand brand" href="#" onclick="showPage('home');return false;">
+        CivicSetu <span style="color:#1565C0">Bihar</span><small>SEE IT · REPORT IT · RESOLVE IT</small>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"><i class="fa-solid fa-bars"></i></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+          <li><a class="nav-link" data-nav="home" href="#" onclick="showPage('home');return false;">Home</a></li>
+          <li><a class="nav-link" data-nav="report" href="#" onclick="openReport();return false;">Report Issue</a></li>
+          <li><a class="nav-link" data-nav="complaints" href="#" onclick="showPage('complaints');return false;">My
+              Complaints</a></li>
+          <li><a class="nav-link" data-nav="map" href="#" onclick="showPage('map');return false;">Civic Map</a></li>
+          <li><a class="nav-link" data-nav="dashboard" href="#"
+              onclick="showPage('dashboard');return false;">Dashboard</a></li>
+          <li class="nav-item dropdown ms-lg-2">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fa-solid fa-globe"></i>
+              <span id="langLabel">English</span></a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" onclick="setLang('en');return false;">English</a></li>
+              <li><a class="dropdown-item" href="#" onclick="setLang('hi');return false;">हिन्दी</a></li>
+            </ul>
+          </li>
+          <li class="ms-lg-2"><button class="btn btn-primary btn-sm" onclick="showPage('login')"><i
+                class="fa-solid fa-right-to-bracket me-1"></i> Login</button></li>
+          <li class="ms-lg-2"><button class="btn btn-outline-secondary btn-sm" onclick="showPage('admin')"><i
+                class="fa-solid fa-shield-halved me-1"></i> Admin</button></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- HOME -->
+    <section id="page-home" class="page active">
+      <div class="hero">
+        <div class="container">
+          <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+              <div class="badge text-bg-light border px-3 py-2 mb-3"><i
+                  class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i>AI-assisted civic reporting</div>
+              <h1>Build a <span>Cleaner, Safer Bihar</span> Together</h1>
+              <p class="mt-4">Report civic issues, track their progress, and help improve your community. CivicSetu
+                connects citizens and administrators through one simple digital platform.</p>
+              <div class="d-flex flex-wrap gap-3 mt-4">
+                <button class="btn btn-primary btn-lg" onclick="openReport()"><i
+                    class="fa-solid fa-camera me-2"></i>Report a Problem</button>
+                <button class="btn btn-outline-primary btn-lg" onclick="trackDemo()"><i
+                    class="fa-solid fa-location-dot me-2"></i>Track Complaint</button>
+              </div>
+              <div class="d-flex gap-4 mt-4 small-muted">
+                <span><i class="fa-solid fa-circle-check text-success me-1"></i>Simple reporting</span>
+                <span><i class="fa-solid fa-robot text-primary me-1"></i>AI-assisted</span>
+                <span><i class="fa-solid fa-map text-primary me-1"></i>Map based</span>
+              </div>
+            </div>
+            <div class="col-lg-5 hero-art">
+              <div class="city-card">
+                <div class="city-top">
+                  <div class="building b1"></div>
+                  <div class="building b2"></div>
+                  <div class="building b3"></div>
+                  <div class="building b4"></div>
+                  <div class="road"></div>
+                  <div class="pin"><i class="fa-solid fa-location-dot"></i></div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-3">
+                  <div><strong>Government Polytechnic Banka</strong>
+                    <div class="small-muted">Demo civic location</div>
+                  </div>
+                  <span class="badge-status status-progress">In Progress</span>
+                </div>
+              </div>
+              <div class="float-card fc1"><i class="fa-solid fa-robot text-primary me-1"></i> AI detected: Garbage</div>
+              <!-- <div class="float-card fc2"><i class="fa-solid fa-check-circle text-success me-1"></i> Complaint resolved</div> -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="container">
+          <div class="text-center mb-5">
+            <h2 class="section-title">What can you report?</h2>
+            <p class="section-sub mx-auto">Choose a civic issue and start a report in a few simple steps.</p>
+          </div>
+          <div class="row g-4" id="categoryCards"></div>
+        </div>
+      </div>
+
+      <div class="section bg-white">
+        <div class="container">
+          <div class="text-center mb-5">
+            <h2 class="section-title">How CivicSetu Works</h2>
+          </div>
+          <div class="steps">
+            <div class="step-chip"><span class="step-num">01</span> Report</div>
+            <div class="step-line"></div>
+            <div class="step-chip"><span class="step-num">02</span> AI Analysis</div>
+            <div class="step-line"></div>
+            <div class="step-chip"><span class="step-num">03</span> Location</div>
+            <div class="step-line"></div>
+            <div class="step-chip"><span class="step-num">04</span> Track</div>
+            <div class="step-line"></div>
+            <div class="step-chip"><span class="step-num">05</span> Resolve</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="container">
+          <div class="text-center mb-4">
+            <h2 class="section-title">Demo Impact</h2>
+            <p class="small-muted">Sample values for hackathon demonstration only.</p>
+          </div>
+          <div class="row g-4">
+            <div class="col-6 col-lg-3">
+              <div class="cardx stat"><i class="fa-solid fa-file-circle-plus"></i>
+                <h3>1,250+</h3>
+                <p>Reports</p>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="cardx stat"><i class="fa-solid fa-circle-check"></i>
+                <h3>840</h3>
+                <p>Resolved</p>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="cardx stat"><i class="fa-solid fa-location-dot"></i>
+                <h3>32</h3>
+                <p>Areas Covered</p>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="cardx stat"><i class="fa-solid fa-brain"></i>
+                <h3>92%</h3>
+                <p>AI Accuracy (demo)</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGIN -->
+    <section id="page-login" class="page">
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-md-6 col-lg-5">
+            <div class="cardx">
+              <div class="text-center mb-4">
+                <div class="icon-box mx-auto"><i class="fa-solid fa-lock"></i></div>
+                <h2 class="fw-black">Welcome Back</h2>
+                <p class="small-muted">Login to your CivicSetu account.</p>
+              </div>
+              <form onsubmit="login(event)">
+                <label class="form-label fw-semibold">Email</label><input id="loginEmail" type="email"
+                  class="form-control mb-3" required placeholder="you@example.com">
+                <label class="form-label fw-semibold">Password</label><input type="password" class="form-control mb-2"
+                  required placeholder="••••••••">
+                <div class="text-end mb-3"><a href="#" onclick="toast('Demo: password reset link sent.');return false;"
+                    class="small text-primary">Forgot Password?</a></div>
+                <button class="btn btn-primary w-100">Login</button>
+              </form>
+              <div class="text-center mt-3 small-muted">Don't have an account? <a href="#" class="text-primary fw-bold"
+                  onclick="showPage('register');return false;">Create Account</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REGISTER -->
+    <section id="page-register" class="page">
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-md-7 col-lg-6">
+            <div class="cardx">
+              <div class="text-center mb-4">
+                <div class="icon-box mx-auto"><i class="fa-solid fa-user-plus"></i></div>
+                <h2 class="fw-black">Create Account</h2>
+                <p class="small-muted">Join CivicSetu and help improve your community.</p>
+              </div>
+              <form onsubmit="register(event)">
+                <div class="row g-3">
+                  <div class="col-md-6"><label class="form-label fw-semibold">Full Name</label><input id="regName"
+                      class="form-control" required></div>
+                  <div class="col-md-6"><label class="form-label fw-semibold">Phone</label><input id="regPhone"
+                      class="form-control" required></div>
+                  <div class="col-12"><label class="form-label fw-semibold">Email</label><input id="regEmail"
+                      type="email" class="form-control" required></div>
+                  <div class="col-md-6"><label class="form-label fw-semibold">Password</label><input id="regPass"
+                      type="password" class="form-control" minlength="6" required></div>
+                  <div class="col-md-6"><label class="form-label fw-semibold">Confirm Password</label><input
+                      id="regConfirm" type="password" class="form-control" minlength="6" required></div>
+                </div>
+                <button class="btn btn-primary w-100 mt-4">Create Account</button>
+              </form>
+              <div class="text-center mt-3 small-muted">Already registered? <a href="#" class="text-primary fw-bold"
+                  onclick="showPage('login');return false;">Login</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="page">
+      <div class="dashboard-wrap">
+        <div class="container">
+          <div class="row g-4">
+            <div class="col-lg-3">
+              <div class="sidebar cardx">
+                <div class="fw-bold mb-3"><i class="fa-solid fa-user-circle text-primary me-2"></i><span
+                    id="sideUser">Citizen</span></div>
+                <div class="list-group">
+                  <a class="list-group-item active" href="#" onclick="showPage('dashboard');return false;"><i
+                      class="fa-solid fa-grid-2 me-2"></i>Dashboard</a>
+                  <a class="list-group-item" href="#" onclick="openReport();return false;"><i
+                      class="fa-solid fa-plus me-2"></i>Report Issue</a>
+                  <a class="list-group-item" href="#" onclick="showPage('complaints');return false;"><i
+                      class="fa-solid fa-list-check me-2"></i>My Complaints</a>
+                  <a class="list-group-item" href="#" onclick="showPage('map');return false;"><i
+                      class="fa-solid fa-map me-2"></i>Map</a>
+                  <a class="list-group-item" href="#" onclick="showPage('profile');return false;"><i
+                      class="fa-solid fa-user me-2"></i>Profile</a>
+                  <a class="list-group-item" href="#" onclick="showPage('settings');return false;"><i
+                      class="fa-solid fa-gear me-2"></i>Settings</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-9">
+              <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                <div>
+                  <h2 class="fw-black mb-1">Welcome back! 👋</h2>
+                  <p class="small-muted mb-0">Here is your civic activity overview.</p>
+                </div><button class="btn btn-primary" onclick="openReport()"><i class="fa-solid fa-plus me-2"></i>New
+                  Report</button>
+              </div>
+              <div class="row g-3 mb-4" id="dashboardKpis"></div>
+              <div class="cardx">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5 class="fw-bold mb-0">Recent Complaints</h5><button class="btn btn-sm btn-outline-primary"
+                    onclick="showPage('complaints')">View All</button>
+                </div>
+                <div class="table-responsive">
+                  <table class="table align-middle">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <!-- <tbody id="recentBody"></tbody> -->
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORT -->
+    <section id="page-report" class="page">
+      <div class="container py-4 py-lg-5">
+        <div class="row justify-content-center">
+          <div class="col-xl-9">
+            <div class="mb-4"><span class="badge text-bg-light border">CivicSetu Reporting</span>
+              <h2 class="fw-black mt-2">Report a Problem</h2>
+              <p class="small-muted">Submit a civic issue in five simple steps.</p>
+            </div>
+            <div class="cardx">
+              <div class="d-flex justify-content-between mb-2"><span id="stepText" class="fw-bold">Step 1 of
+                  5</span><span id="stepName" class="small-muted">Photo</span></div>
+              <div class="progress-track mb-4">
+                <div id="reportProgress" class="progress-fill"></div>
+              </div>
+
+              <div class="form-step active" id="rstep1">
+                <h4 class="fw-bold">Upload a photo of the problem</h4>
+                <p class="small-muted">A clear photo helps the AI demo suggest a category.</p>
+                <div id="uploadZone" class="upload-zone mt-4" onclick="document.getElementById('photoInput').click()">
+                  <div id="uploadContent"><i class="fa-solid fa-cloud-arrow-up fa-3x text-primary mb-3"></i>
+                    <h5 class="fw-bold">Choose Image or Drag & Drop</h5>
+                    <p class="small-muted mb-0">JPG, PNG or WEBP · Demo only, nothing is uploaded</p><input
+                      id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+                  </div>
+                  <div id="previewContent" class="hidden"><img id="imagePreview" class="upload-preview">
+                    <div id="fileName" class="small-muted mt-2"></div><button class="btn btn-sm btn-outline-danger mt-3"
+                      type="button" onclick="removePhoto(event)"><i class="fa-solid fa-trash me-1"></i>Remove</button>
+                  </div>
+                </div>
+                <div class="text-end mt-4"><button id="toAI" class="btn btn-primary" onclick="nextReportStep()"
+                    disabled>Continue <i class="fa-solid fa-arrow-right ms-2"></i></button></div>
+              </div>
+
+              <div class="form-step" id="rstep2">
+                <h4 class="fw-bold">AI-assisted analysis</h4>
+                <p class="small-muted">This is a frontend demo. No real AI model is running.</p>
+                <div id="aiLoading" class="ai-box mt-4 text-center">
+                  <div class="spinner-border text-primary mb-3"></div>
+                  <h5>AI is analyzing the image…</h5>
+                  <p class="small-muted mb-0">Simulating category and priority detection.</p>
+                </div>
+                <div id="aiResult" class="ai-box mt-4 hidden">
+                  <div class="row align-items-center">
+                    <div class="col-md-7">
+                      <div class="small-muted">Detected Issue</div>
+                      <h3 id="aiCategory" class="fw-black mt-1">Garbage / Waste</h3>
+                      <div class="small-muted mt-3">Suggested Priority</div><span id="aiPriority"
+                        class="badge-status priority-high d-inline-block mt-1">HIGH</span>
+                    </div>
+                    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                      <div class="small-muted">Confidence</div>
+                      <div class="ai-score">92%</div>
+                    </div>
+                  </div><button class="btn btn-outline-primary mt-3"
+                    onclick="toast('Category can be changed in the next step.')"><i
+                      class="fa-solid fa-pen me-1"></i>Change Category</button>
+                </div>
+                <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-secondary"
+                    onclick="prevReportStep()">Back</button><button id="aiContinue" class="btn btn-primary"
+                    onclick="nextReportStep()" disabled>Continue <i class="fa-solid fa-arrow-right ms-2"></i></button>
+                </div>
+              </div>
+
+              <div class="form-step" id="rstep3">
+                <h4 class="fw-bold">Issue details</h4>
+                <p class="small-muted">Confirm the AI suggestion or select your own category.</p>
+                <div class="row g-3 mt-1">
+                  <div class="col-md-6"><label class="form-label fw-semibold">Category</label><select id="category"
+                      class="form-select">
+                      <option>Garbage / Waste</option>
+                      <option>Road / Pothole</option>
+                      <option>Water Leakage</option>
+                      <option>Drainage</option>
+                      <option>Streetlight</option>
+                      <option>Other Infrastructure</option>
+                    </select></div>
+                  <div class="col-md-6"><label class="form-label fw-semibold">Priority</label><select id="priority"
+                      class="form-select">
+                      <option>High</option>
+                      <option>Medium</option>
+                      <option>Low</option>
+                    </select></div>
+                  <div class="col-12"><label class="form-label fw-semibold">Description</label><textarea
+                      id="description" class="form-control" rows="5"
+                      placeholder="Describe the problem, nearby landmark, or any useful details..." required></textarea>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-secondary"
+                    onclick="prevReportStep()">Back</button><button class="btn btn-primary"
+                    onclick="nextReportStep()">Continue <i class="fa-solid fa-arrow-right ms-2"></i></button></div>
+              </div>
+
+              <div class="form-step" id="rstep4">
+                <h4 class="fw-bold">Select location</h4>
+                <p class="small-muted">Click on the map or use your browser's location permission.</p>
+                <div id="reportMap" class="map mt-3"></div>
+                <div class="row g-3 mt-1">
+                  <div class="col-md-6"><label class="form-label fw-semibold">Latitude</label><input id="lat"
+                      class="form-control" readonly></div>
+                  <div class="col-md-6"><label class="form-label fw-semibold">Longitude</label><input id="lng"
+                      class="form-control" readonly></div>
+                </div>
+                <button class="btn btn-outline-primary mt-3" onclick="useMyLocation()"><i
+                    class="fa-solid fa-location-crosshairs me-2"></i>Use My Location</button>
+                <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-secondary"
+                    onclick="prevReportStep()">Back</button><button class="btn btn-primary"
+                    onclick="nextReportStep()">Review <i class="fa-solid fa-arrow-right ms-2"></i></button></div>
+              </div>
+
+              <div class="form-step" id="rstep5">
+                <h4 class="fw-bold">Review your complaint</h4>
+                <p class="small-muted">Check the details before submitting.</p>
+                <div id="reviewBox" class="cardx mt-3"></div>
+                <div class="d-flex justify-content-between mt-4"><button class="btn btn-outline-secondary"
+                    onclick="prevReportStep()">Back</button><button class="btn btn-primary btn-lg"
+                    onclick="submitComplaint()"><i class="fa-solid fa-paper-plane me-2"></i>Submit Complaint</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUCCESS -->
+    <section id="page-success" class="page">
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-7">
+            <div class="cardx text-center py-5">
+              <div class="icon-box mx-auto mb-3"
+                style="background:#e7f7ed;color:#198754;width:70px;height:70px;font-size:30px"><i
+                  class="fa-solid fa-check"></i></div>
+              <h2 class="fw-black">Complaint Submitted Successfully!</h2>
+              <p class="small-muted">Your report has been saved in this demo browser.</p>
+              <div class="cardx mt-4 text-start">
+                <div class="small-muted">Your Complaint ID</div>
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                  <h2 id="successId" class="fw-black text-primary mb-0">CSB-2026-00142</h2><button
+                    class="btn btn-sm btn-outline-primary" onclick="copyId()"><i
+                      class="fa-regular fa-copy"></i></button>
+                </div>
+                <hr>
+                <div class="row g-3">
+                  <div class="col-sm-6"><span class="small-muted">Status</span>
+                    <div class="fw-bold"><span class="badge-status status-reported">Reported</span></div>
+                  </div>
+                  <div class="col-sm-6"><span class="small-muted">Category</span>
+                    <div id="successCategory" class="fw-bold">Garbage / Waste</div>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex flex-wrap justify-content-center gap-2 mt-4"><button class="btn btn-primary"
+                  onclick="showComplaint(lastComplaintId)">Track Complaint</button><button
+                  class="btn btn-outline-primary" onclick="showPage('complaints')">View My Complaints</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPLAINTS -->
+    <section id="page-complaints" class="page">
+      <div class="container py-5">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+          <div>
+            <h2 class="fw-black">My Complaints</h2>
+            <p class="small-muted mb-0">Search and track your submitted civic reports.</p>
+          </div><button class="btn btn-primary" onclick="openReport()"><i class="fa-solid fa-plus me-2"></i>New
+            Report</button>
+        </div>
+        <div class="cardx mb-4">
+          <div class="row g-2">
+            <div class="col-lg-6">
+              <div class="input-group"><span class="input-group-text bg-white"><i
+                    class="fa-solid fa-search"></i></span><input id="complaintSearch" class="form-control"
+                  placeholder="Search complaint ID…" oninput="renderComplaints()"></div>
+            </div>
+            <div class="col-lg-6 d-flex flex-wrap gap-2"><button class="btn btn-sm btn-primary filterBtn"
+                data-filter="All" onclick="setFilter('All')">All</button><button
+                class="btn btn-sm btn-outline-secondary filterBtn" data-filter="Pending"
+                onclick="setFilter('Pending')">Pending</button><button
+                class="btn btn-sm btn-outline-secondary filterBtn" data-filter="In Progress"
+                onclick="setFilter('In Progress')">In Progress</button><button
+                class="btn btn-sm btn-outline-secondary filterBtn" data-filter="Resolved"
+                onclick="setFilter('Resolved')">Resolved</button></div>
+          </div>
+        </div>
+        <div class="cardx">
+          <div class="table-responsive">
+            <table class="table align-middle">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Category</th>
+                  <th>Location</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <!-- <tbody id="complaintsBody"></tbody> -->
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPLAINT DETAIL -->
+    <section id="page-detail" class="page">
+      <div class="container py-5">
+        <div class="row g-4">
+          <div class="col-lg-7">
+            <div class="cardx">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <div class="small-muted">Complaint ID</div>
+                  <h2 id="detailId" class="fw-black text-primary">CSB-2026-00142</h2>
+                </div><span id="detailStatus" class="badge-status status-progress">In Progress</span>
+              </div>
+              <hr>
+              <div id="detailInfo"></div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="cardx">
+              <h5 class="fw-bold mb-4">Complaint Timeline</h5>
+              <div id="timeline" class="timeline"></div>
+            </div>
+          </div>
+        </div>
+        <div class="cardx mt-4">
+          <h5 class="fw-bold">Similar Reports</h5>
+          <div class="p-3 rounded-4 mt-3" style="background:#fff8e1;border:1px solid #ffe7a0"><i
+              class="fa-solid fa-triangle-exclamation text-warning me-2"></i><strong>Similar Reports Found</strong>
+            <p class="small-muted mt-2 mb-2">14 demo reports may refer to the same issue.</p><button
+              class="btn btn-sm btn-outline-primary" onclick="toast('Related reports opened in demo mode.')">View
+              Related Reports</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAP -->
+    <section id="page-map" class="page">
+      <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+          <div>
+            <h2 class="fw-black">Civic Map</h2>
+            <p class="small-muted mb-0">Explore demo civic reports by location and priority.</p>
+          </div>
+        </div>
+        <div id="civicMap" class="map"></div>
+        <div class="d-flex gap-3 mt-3 flex-wrap small-muted"><span>🔴 High Priority</span><span>🟡 Medium
+            Priority</span><span>🟢 Resolved</span></div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="page-profile" class="page">
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-7">
+            <div class="cardx">
+              <h3 class="fw-black">Profile</h3>
+              <p class="small-muted">Manage your demo citizen profile.</p>
+              <div class="text-center py-3">
+                <div class="rounded-circle mx-auto d-grid place-items-center"
+                  style="width:90px;height:90px;background:#eaf2ff;color:#0b3b82;font-size:35px"><i
+                    class="fa-solid fa-user"></i></div>
+              </div>
+              <div class="row g-3">
+                <div class="col-md-6"><label class="form-label fw-semibold">Name</label><input id="profileName"
+                    class="form-control" value="Citizen User"></div>
+                <div class="col-md-6"><label class="form-label fw-semibold">Phone</label><input class="form-control"
+                    value="+91 98765 43210"></div>
+                <div class="col-12"><label class="form-label fw-semibold">Email</label><input id="profileEmail"
+                    class="form-control" value="citizen@example.com"></div>
+              </div><button class="btn btn-primary mt-4" onclick="saveProfile()">Save Changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="page-settings" class="page">
+      <div class="container py-5">
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <h2 class="fw-black">Settings</h2>
+            <p class="small-muted">Customize your CivicSetu demo experience.</p>
+            <div class="cardx mt-4">
+              <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div><strong>Language</strong>
+                  <div class="small-muted">English / हिन्दी</div>
+                </div><select class="form-select" style="width:150px" onchange="setLang(this.value)">
+                  <option value="en">English</option>
+                  <option value="hi">हिन्दी</option>
+                </select>
+              </div>
+              <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                <div><strong>Notifications</strong>
+                  <div class="small-muted">Receive demo status updates</div>
+                </div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" checked></div>
+              </div>
+              <div class="d-flex justify-content-between align-items-center py-3">
+                <div><strong>Dark Mode</strong>
+                  <div class="small-muted">Switch the interface theme</div>
+                </div>
+                <div class="form-check form-switch"><input id="darkToggle" class="form-check-input" type="checkbox"
+                    onchange="toggleDark(this.checked)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="page-admin" class="page">
+      <div class="container-fluid py-4">
+        <div class="row g-4">
+          <div class="col-lg-2">
+            <div class="admin-sidebar">
+              <div class="fw-black fs-5 mb-3">CivicSetu <span style="color:#6db0ff">Admin</span></div><a class="active"
+                href="#" onclick="adminTab('dashboard');return false;"><i
+                  class="fa-solid fa-grid-2 me-2"></i>Dashboard</a><a href="#"
+                onclick="adminTab('complaints');return false;"><i class="fa-solid fa-list me-2"></i>Complaints</a><a
+                href="#" onclick="adminTab('analytics');return false;"><i
+                  class="fa-solid fa-chart-column me-2"></i>Analytics</a><a href="#"
+                onclick="showPage('map');return false;"><i class="fa-solid fa-map me-2"></i>Map</a><a href="#"
+                onclick="showPage('settings');return false;"><i class="fa-solid fa-gear me-2"></i>Settings</a>
+              <hr><a href="#" onclick="showPage('home');return false;"><i
+                  class="fa-solid fa-arrow-left me-2"></i>Citizen Site</a>
+            </div>
+          </div>
+          <div class="col-lg-10">
+            <div id="adminContent"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-5">
+            <div class="brand fs-4">CivicSetu <span style="color:#70b2ff">Bihar</span><small style="color:#9eb5d3">SEE
+                IT · REPORT IT · RESOLVE IT</small></div>
+            <p class="mt-3 mb-0" style="color:#b9c9dd">An AI-assisted civic issue reporting prototype created for
+              hackathon demonstration.</p>
+          </div>
+          <div class="col-lg-3"><strong>Quick Links</strong>
+            <div class="mt-3 d-grid gap-2" style="color:#b9c9dd"><a href="#" onclick="openReport();return false;">Report
+                Issue</a><a href="#" onclick="showPage('complaints');return false;">My Complaints</a><a href="#"
+                onclick="showPage('map');return false;">Civic Map</a></div>
+          </div>
+          <div class="col-lg-4"><strong>Demo Notice</strong>
+            <p class="mt-3 mb-0" style="color:#b9c9dd">AI results, statistics, complaint data and administrative actions
+              in this standalone version are demo data stored locally in your browser.</p>
+          </div>
+        </div>
+        <hr style="border-color:#28415f">
+        <div class="d-flex justify-content-between small" style="color:#8fa7c4"><span>© 2026 CivicSetu
+            Bihar</span><span>Hackathon Prototype</span></div>
+      </div>
+    </footer>
+  </main>
+
+  <div id="toastWrap" class="toast-wrap"></div>
+  <div id="modal" class="modal-backdropx" onclick="if(event.target===this)closeModal()">
+    <div class="modalx" id="modalContent"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="script.js"></script>
+
+</body>
+
+</html>
